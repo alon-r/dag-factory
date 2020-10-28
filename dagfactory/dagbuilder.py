@@ -9,6 +9,7 @@ from airflow.models import Variable
 
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.models import BaseOperator
+from airflow.operators.docker_operator import DockerOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow.utils.module_loading import import_string
 from airflow import __version__ as AIRFLOW_VERSION
@@ -181,6 +182,9 @@ class DagBuilder:
                     if task_params.get("init_containers") is not None
                     else None
                 )
+            if operator_obj == DockerOperator:
+                if task_params.get("environment") is not None:
+                    task_params['environment'] = {k: os.environ.get(v) for k, v in task_params['environment']}
 
             if utils.check_dict_key(task_params, "execution_timeout_secs"):
                 task_params["execution_timeout"]: timedelta = timedelta(
