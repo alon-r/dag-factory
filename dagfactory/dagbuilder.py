@@ -184,7 +184,7 @@ class DagBuilder:
                 )
             if operator_obj == DockerOperator:
                 if task_params.get("environment") is not None:
-                    task_params["environment"] = {k: os.environ.get(v) for k, v in task_params["environment"].items()}
+                    task_params["environment"] = {k: os.environ.get(v, v) for k, v in task_params["environment"].items()}
 
             if utils.check_dict_key(task_params, "execution_timeout_secs"):
                 task_params["execution_timeout"]: timedelta = timedelta(
