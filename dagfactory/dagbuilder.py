@@ -104,6 +104,14 @@ class DagBuilder:
                 dag_params["on_failure_callback_file"],
             )
 
+        # set schedule_interval from airflow variable
+        if utils.check_dict_key(dag_params, "schedule_interval_var"):
+            if Variable.get(dag_params["schedule_interval_var"], default_var=None) is not None:
+                dag_params["schedule_interval"] = Variable.get(
+                    dag_params["schedule_interval_var"],
+                    default_var=dag_params["schedule_interval"]
+                )
+
         try:
             # ensure that default_args dictionary contains key "start_date"
             # with "datetime" value in specified timezone
