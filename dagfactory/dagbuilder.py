@@ -219,9 +219,9 @@ class DagBuilder:
                     "af_vars_as_arguments"
                 )
                 for variable in variables:
-                    if af_vars.get(variable["variable"], default_var=None) is not None:
+                    if af_vars.get(variable["variable"], None) is not None:
                         task_params[variable["attribute"]] = af_vars.get(
-                            variable["variable"], default_var=None
+                            variable["variable"], None
                         )
                 del task_params["af_vars_as_arguments"]
 

@@ -84,7 +84,7 @@ class DagFactory:
             globals[dag["dag_id"]]: DAG = dag["dag"]
 
     # pylint: disable=redefined-builtin
-    def clean_dags(self, globals: Dict[str, Any]) -> None:
+    def clean_dags(self, globals: Dict[str, Any], af_vars: Dict[str, Any]) -> None:
         """
         Clean old DAGs that are not on YAML config but were auto-generated through dag-factory
 
@@ -99,7 +99,7 @@ class DagFactory:
 
         for dag_name, dag_config in dag_configs.items():
             dag_builder: DagBuilder = DagBuilder(
-                dag_name=dag_name, dag_config=dag_config, default_config=default_config
+                dag_name=dag_name, dag_config=dag_config, default_config=default_config, af_vars=af_vars
             )
             try:
                 dag: Dict[str, Union[str, DAG]] = dag_builder.build()
