@@ -48,11 +48,12 @@ class DagBuilder:
     """
 
     def __init__(
-        self, dag_name: str, dag_config: Dict[str, Any], default_config: Dict[str, Any]
+        self, dag_name: str, dag_config: Dict[str, Any], default_config: Dict[str, Any], af_vars: Dict[str, Any] = None
     ) -> None:
         self.dag_name: str = dag_name
         self.dag_config: Dict[str, Any] = dag_config
         self.default_config: Dict[str, Any] = default_config
+        self.af_vars = af_vars
 
     def get_dag_params(self) -> Dict[str, Any]:
         """
@@ -124,7 +125,7 @@ class DagBuilder:
         return dag_params
 
     @staticmethod
-    def make_task(operator: str, task_params: Dict[str, Any]) -> BaseOperator:
+    def make_task(operator: str, task_params: Dict[str, Any], af_vars: Dict[str, Any]) -> BaseOperator:
         """
         Takes an operator and params and creates an instance of that operator.
 
@@ -212,6 +213,18 @@ class DagBuilder:
                         )
                 del task_params["variables_as_arguments"]
 
+            # use variables as arguments on operator
+            if utils.check_dict_key(task_params, "af_vars_as_arguments"):
+                variables: List[Dict[str, str]] = task_params.get(
+                    "af_vars_as_arguments"
+                )
+                for variable in variables:
+                    if af_vars.get(variable["variable"], default_var=None) is not None:
+                        task_params[variable["attribute"]] = af_vars.get(
+                            variable["variable"], default_var=None
+                        )
+                del task_params["af_vars_as_arguments"]
+
             task: BaseOperator = operator_obj(**task_params)
         except Exception as err:
             raise f"Failed to create {operator_obj} task" from err
@@ -292,7 +305,7 @@ class DagBuilder:
                 k: v for k, v in task_conf.items() if k not in SYSTEM_PARAMS
             }
             task: BaseOperator = DagBuilder.make_task(
-                operator=operator, task_params=params
+                operator=operator, task_params=params, af_vars=self.af_vars
             )
             tasks_dict[task.task_id]: BaseOperator = task
 
