@@ -107,10 +107,9 @@ class DagBuilder:
 
         # set schedule_interval from airflow variable
         if utils.check_dict_key(dag_params, "schedule_interval_var"):
-            if Variable.get(dag_params["schedule_interval_var"], default_var=None) is not None:
-                dag_params["schedule_interval"] = Variable.get(
-                    dag_params["schedule_interval_var"],
-                    default_var=dag_params["schedule_interval"]
+            if self.af_vars.get(dag_params["schedule_interval_var"], None) is not None:
+                dag_params["schedule_interval"] = self.af_vars.get(
+                    dag_params["schedule_interval_var"], dag_params["schedule_interval"]
                 )
 
         try:
