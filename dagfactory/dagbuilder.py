@@ -211,6 +211,9 @@ class DagBuilder:
                 if 'ECS_CLUSTER' in af_vars:
                     task_params['cluster'] = af_vars["ECS_CLUSTER"]
 
+                if os.environ.get('ENV_NAME'):
+                    task_params['task_definition'] = f"{task_params['task_definition']}_{os.environ.get('ENV_NAME')}"
+
             if utils.check_dict_key(task_params, "execution_timeout_secs"):
                 task_params["execution_timeout"]: timedelta = timedelta(
                     seconds=task_params["execution_timeout_secs"]
