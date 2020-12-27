@@ -200,6 +200,13 @@ class DagBuilder:
                     if c.get('environment') is not None:
                         c["environment"] = {k: os.environ.get(v, v) for k, v in c["environment"].items()}
 
+                if 'ECS_SECURITY_GROUPS' in af_vars:
+                    task_params["network_configuration"]["awsvpcConfiguration"]['securityGroups']\
+                        = af_vars['ECS_SECURITY_GROUPS']
+
+                if 'ECS_SUBNETS' in af_vars:
+                    task_params['network_configuration']["awsvpcConfiguration"]["subnets"] = af_vars["ECS_SUBNETS"]
+
             if utils.check_dict_key(task_params, "execution_timeout_secs"):
                 task_params["execution_timeout"]: timedelta = timedelta(
                     seconds=task_params["execution_timeout_secs"]
