@@ -198,10 +198,11 @@ class DagBuilder:
             if operator_obj == ECSOperator:
                 for c in task_params["overrides"]["containerOverrides"]:
                     if c.get('environment') is not None:
-                        c["environment"] = {k: os.environ.get(v, v) for k, v in c["environment"].items()}
+                        for env in c['environment']:
+                            env['value'] = os.environ.get(env['name'], env['value'])
 
                 if 'ECS_SECURITY_GROUPS' in af_vars:
-                    task_params["network_configuration"]["awsvpcConfiguration"]['securityGroups']\
+                    task_params["network_configuration"]["awsvpcConfiguration"]['securityGroups'] \
                         = af_vars['ECS_SECURITY_GROUPS']
 
                 if 'ECS_SUBNETS' in af_vars:
