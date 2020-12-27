@@ -199,7 +199,7 @@ class DagBuilder:
                 for c in task_params["overrides"]["containerOverrides"]:
                     if c.get('environment') is not None:
                         for env in c['environment']:
-                            env['value'] = os.environ.get(env['name'], env['value'])
+                            env['value'] = os.environ.get(env['value'], env['value'])
 
                 if 'ECS_SECURITY_GROUPS' in af_vars:
                     task_params["network_configuration"]["awsvpcConfiguration"]['securityGroups'] \
