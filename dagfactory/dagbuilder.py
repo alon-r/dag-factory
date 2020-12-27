@@ -208,6 +208,9 @@ class DagBuilder:
                 if 'ECS_SUBNETS' in af_vars:
                     task_params['network_configuration']["awsvpcConfiguration"]["subnets"] = af_vars["ECS_SUBNETS"]
 
+                if 'ECS_CLUSTER' in af_vars:
+                    task_params['cluster'] = af_vars["ECS_CLUSTER"]
+
             if utils.check_dict_key(task_params, "execution_timeout_secs"):
                 task_params["execution_timeout"]: timedelta = timedelta(
                     seconds=task_params["execution_timeout_secs"]
