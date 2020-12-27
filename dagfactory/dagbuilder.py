@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, List, Union
 import os
 
 from airflow import DAG, configuration
+from airflow.contrib.operators.ecs_operator import ECSOperator
 from airflow.models import Variable
 
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
@@ -193,6 +194,11 @@ class DagBuilder:
             if operator_obj == DockerOperator:
                 if task_params.get("environment") is not None:
                     task_params["environment"] = {k: os.environ.get(v, v) for k, v in task_params["environment"].items()}
+
+            if operator_obj == ECSOperator:
+                for c in task_params["overrides"]["containerOverrides"]:
+                    if c.get('environment') is not None:
+                        c["environment"] = {k: os.environ.get(v, v) for k, v in c["environment"].items()}
 
             if utils.check_dict_key(task_params, "execution_timeout_secs"):
                 task_params["execution_timeout"]: timedelta = timedelta(
