@@ -70,6 +70,12 @@ class DagBuilder:
             raise "Failed to merge config with default config" from err
         dag_params["dag_id"]: str = self.dag_name
 
+        if (
+            utils.check_dict_key(dag_params, "schedule_interval")
+            and dag_params["schedule_interval"] == "None"
+        ):
+            dag_params["schedule_interval"] = None
+
         # Convert from 'dagrun_timeout_sec: int' to 'dagrun_timeout: timedelta'
         if utils.check_dict_key(dag_params, "dagrun_timeout_sec"):
             dag_params["dagrun_timeout"]: timedelta = timedelta(
@@ -149,6 +155,10 @@ class DagBuilder:
                     task_params["python_callable_name"],
                     task_params["python_callable_file"],
                 )
+                # remove dag-factory specific parameters
+                # Airflow 2.0 doesn't allow these to be passed to operator
+                del task_params["python_callable_name"]
+                del task_params["python_callable_file"]
 
             # KubernetesPodOperator
             if operator_obj == KubernetesPodOperator:
@@ -220,6 +230,22 @@ class DagBuilder:
                 )
                 del task_params["execution_timeout_secs"]
 
+            if utils.check_dict_key(task_params, "execution_delta_secs"):
+                task_params["execution_delta"]: timedelta = timedelta(
+                    seconds=task_params["execution_delta_secs"]
+                )
+                del task_params["execution_delta_secs"]
+
+            if utils.check_dict_key(
+                task_params, "execution_date_fn_name"
+            ) and utils.check_dict_key(task_params, "execution_date_fn_file"):
+                task_params["execution_date_fn"]: Callable = utils.get_python_callable(
+                    task_params["execution_date_fn_name"],
+                    task_params["execution_date_fn_file"],
+                )
+                del task_params["execution_date_fn_name"]
+                del task_params["execution_date_fn_file"]
+
             # use variables as arguments on operator
             if utils.check_dict_key(task_params, "variables_as_arguments"):
                 variables: List[Dict[str, str]] = task_params.get(
@@ -259,8 +285,12 @@ class DagBuilder:
         dag_params: Dict[str, Any] = self.get_dag_params()
         dag: DAG = DAG(
             dag_id=dag_params["dag_id"],
-            schedule_interval=dag_params["schedule_interval"],
-            description=dag_params.get("description", ""),
+            schedule_interval=dag_params.get("schedule_interval", timedelta(days=1)),
+            description=(
+                dag_params.get("description", None)
+                if version.parse(AIRFLOW_VERSION) >= version.parse("1.10.11")
+                else dag_params.get("description", "")
+            ),
             concurrency=dag_params.get(
                 "concurrency",
                 configuration.conf.getint("core", "dag_concurrency"),
@@ -283,7 +313,7 @@ class DagBuilder:
             ),
             on_success_callback=dag_params.get("on_success_callback", None),
             on_failure_callback=dag_params.get("on_failure_callback", None),
-            default_args=dag_params.get("default_args", {}),
+            default_args=dag_params.get("default_args", None),
             doc_md=dag_params.get("doc_md", None),
         )
 

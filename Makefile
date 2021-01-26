@@ -15,6 +15,7 @@ venv/bin/activate: setup.py
 	@test -d venv || virtualenv -p python3 venv
 	@${PYTHON} -m pip install -U pip
 	@${PYTHON} -m pip install -e .[dev]
+	@${PYTHON} -m pip install cattrs==1.0.0
 	@touch venv/bin/activate
 
 .PHONY: clean
@@ -42,7 +43,6 @@ lint: venv ## Lint code with pylint
 
 .PHONY: test
 test: venv ## Runs unit tests
-	@bash -c 'source venv/bin/activate && airflow initdb'
 	@${PYTHON} -m tox
 
 .PHONY: docker-build
@@ -52,7 +52,7 @@ docker-build:
 
 .PHONY: docker-run
 docker-run: docker-build ## Runs local Airflow for testing
-	@docker run -d -e AIRFLOW__CORE__DAGS_FOLDER=/usr/local/airflow/dags -v $(PWD)/examples:/usr/local/airflow/dags -p 8080:8080 --name=dag_factory dag_factory:latest
+	@docker run -d -e AIRFLOW__CORE__DAGS_FOLDER=/usr/local/airflow/dags -v $(PWD)/examples:/usr/local/airflow/dags -p 127.0.0.1:8080:8080 --name=dag_factory dag_factory:latest
 	@echo "==> Airflow is running at http://localhost:8080"
 
 .PHONY: docker-stop
