@@ -221,8 +221,16 @@ class DagBuilder:
                 if 'ECS_CLUSTER' in af_vars:
                     task_params['cluster'] = af_vars["ECS_CLUSTER"]
 
+                td_parts = []
+                if af_vars.get('ECS_CLUSTER'):
+                    td_parts.append(af_vars.get('ECS_CLUSTER'))
+
+                td_parts.append(task_params['task_definition'])
+
                 if os.environ.get('ENV_NAME'):
-                    task_params['task_definition'] = f"{task_params['task_definition']}_{os.environ.get('ENV_NAME')}"
+                    td_parts.append(os.environ.get('ENV_NAME'))
+
+                task_params['task_definition'] = ('_'.join(td_parts)).lower()
 
             if utils.check_dict_key(task_params, "execution_timeout_secs"):
                 task_params["execution_timeout"]: timedelta = timedelta(
