@@ -218,13 +218,12 @@ class DagBuilder:
                 if 'ECS_SUBNETS' in af_vars:
                     task_params['network_configuration']["awsvpcConfiguration"]["subnets"] = af_vars["ECS_SUBNETS"]
 
-                if 'ECS_CLUSTER' in af_vars:
-                    task_params['cluster'] = af_vars["ECS_CLUSTER"]
-
                 if af_vars.get('ECS_CLUSTER'):
+                    task_params['cluster'] = af_vars["ECS_CLUSTER"]
                     task_params['task_definition'] = (
                             af_vars.get('ECS_CLUSTER') + '_' + task_params['task_definition']
                     ).lower()
+                    task_params['awslogs_group'] + '/' + af_vars.get('ECS_CLUSTER').lower()
 
             if utils.check_dict_key(task_params, "execution_timeout_secs"):
                 task_params["execution_timeout"]: timedelta = timedelta(
