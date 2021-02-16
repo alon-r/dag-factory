@@ -223,7 +223,9 @@ class DagBuilder:
                     task_params['task_definition'] = (
                             af_vars.get('ECS_CLUSTER') + '_' + task_params['task_definition']
                     ).lower()
-                    task_params['awslogs_group'] + '/' + af_vars.get('ECS_CLUSTER').lower()
+
+                    task_params['awslogs_group'] = \
+                        task_params['awslogs_group'] + '/' + af_vars.get('ECS_CLUSTER').lower()
 
             if utils.check_dict_key(task_params, "execution_timeout_secs"):
                 task_params["execution_timeout"]: timedelta = timedelta(
